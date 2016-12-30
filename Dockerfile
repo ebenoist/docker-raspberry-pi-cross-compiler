@@ -13,7 +13,13 @@ RUN apt-get update \
         make \
         runit \
         sudo \
-        xz-utils
+        xz-utils \
+        pkg-config \
+        libasound2-dev \
+        libfreetype6-dev \
+        libcurl3-dev \
+        libxinerama1 \
+        libxinerama-dev
 
 # Here is where we hardcode the toolchain decision.
 ENV HOST=arm-linux-gnueabihf \
@@ -52,6 +58,31 @@ RUN curl -Ls https://github.com/sdhibit/docker-rpi-raspbian/raw/master/raspbian.
         && symlinks -cors /'
 
 COPY image/ /
+
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lasound
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lfreetype
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lcurl
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lX11
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lXext
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lXinerama
+#/rpxc/bin/../lib/gcc/arm-linux-gnueabihf/4.8.3/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lGL
+
+RUN rpdo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+        libfreetype6-dev \
+        libxinerama-dev \
+        libxrandr-dev \
+        libxcursor-dev \
+        libasound2-dev \
+        freeglut3-dev \
+        libcurl3-dev
+#        libx11-dev \
+#        mesa-common-dev \
+#        libxcomposite-dev \
+#        libxcursor-dev \
+
+COPY local/ /rpxc/local/
+RUN sudo ln -s /rpxc/local/lib/libwiringPi.so.2.36 /rpxc/lib/libwiringPi.so
+RUN sudo ln -s /rpxc/local/lib/libwiringPiDev.so.2.36 /rpxc/lib/libwiringPiDev.so
 
 WORKDIR /build
 ENTRYPOINT [ "/rpxc/entrypoint.sh" ]
